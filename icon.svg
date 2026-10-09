@@ -1,0 +1,18 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#080d16"/>
+  <circle cx="256" cy="270" r="155"
+    fill="none" stroke="#203849" stroke-width="20"/>
+  <circle cx="256" cy="270" r="155"
+    fill="none" stroke="#54f0e0" stroke-width="20"
+    stroke-linecap="round" stroke-dasharray="820 155"
+    transform="rotate(-90 256 270)"/>
+  <rect x="216" y="66" width="80" height="22" rx="11"
+    fill="#54f0e0"/>
+  <text x="256" y="290" text-anchor="middle"
+    font-family="Arial,sans-serif" font-weight="bold"
+    font-size="104" fill="#f2f7ff">10</text>
+  <text x="256" y="342" text-anchor="middle"
+    font-family="Arial,sans-serif" font-weight="bold"
+    font-size="40" letter-spacing="5" fill="#54f0e0">.00</text>
+</svg>

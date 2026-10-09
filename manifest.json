@@ -1,0 +1,22 @@
+
+{
+  "id": "./",
+  "name": "10.00 – Tidsutmaningen",
+  "short_name": "10.00",
+  "description": "Stanna tiden på exakt tio sekunder.",
+  "lang": "sv",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#080d16",
+  "theme_color": "#080d16",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,637 @@
+
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#080d16">
+  <meta name="description" content="Kan du stanna tiden på exakt 10 sekunder?">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <title>10.00 – Tidsutmaningen</title>
+
+  <style>
+    :root {
+      --bg: #080d16;
+      --panel: #101927;
+      --cyan: #54f0e0;
+      --text: #f2f7ff;
+      --muted: #8291a8;
+      --line: rgba(153, 180, 213, .13);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      background:
+        radial-gradient(ellipse at 50% 28%, #142a3b 0%, transparent 48%),
+        var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      justify-content: center;
+      overscroll-behavior: none;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: max(28px, env(safe-area-inset-top)) 25px
+               max(24px, env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font-weight: 750;
+      letter-spacing: 2px;
+      font-size: 16px;
+    }
+
+    .brand-icon {
+      width: 35px;
+      height: 35px;
+      border: 1px solid rgba(84,240,224,.4);
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      color: var(--cyan);
+      font-size: 18px;
+      background: rgba(84,240,224,.06);
+    }
+
+    .tag {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.4px;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      padding: 8px 11px;
+    }
+
+    .intro {
+      margin-top: 38px;
+      text-align: center;
+    }
+
+    .eyebrow {
+      color: var(--cyan);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-size: clamp(27px, 7vw, 35px);
+      line-height: 1.15;
+      letter-spacing: -1.1px;
+      margin: 12px 0 9px;
+      font-weight: 750;
+    }
+
+    .subtitle {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .timer-area {
+      position: relative;
+      width: min(76vw, 310px);
+      aspect-ratio: 1;
+      margin: 34px auto 0;
+      display: grid;
+      place-items: center;
+    }
+
+    .timer-area::before {
+      content: "";
+      position: absolute;
+      inset: 14%;
+      border-radius: 50%;
+      background: rgba(84,240,224,.055);
+      filter: blur(28px);
+    }
+
+    .dial {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      transform: rotate(-90deg);
+      position: absolute;
+      inset: 0;
+    }
+
+    .track {
+      fill: none;
+      stroke: rgba(151,180,207,.12);
+      stroke-width: 3;
+    }
+
+    .progress {
+      fill: none;
+      stroke: var(--cyan);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-dasharray: 282.74;
+      stroke-dashoffset: 282.74;
+      filter: drop-shadow(0 0 5px rgba(84,240,224,.45));
+    }
+
+    .ticks {
+      fill: none;
+      stroke: rgba(151,180,207,.3);
+      stroke-width: 1.5;
+    }
+
+    .readout {
+      position: relative;
+      text-align: center;
+      z-index: 1;
+    }
+
+    .time {
+      font-size: clamp(49px, 13vw, 65px);
+      font-weight: 650;
+      letter-spacing: -3px;
+      line-height: 1.1;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+    }
+
+    .unit {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 4px;
+      margin-top: 12px;
+    }
+
+    .status {
+      margin-top: 15px;
+      min-height: 20px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      transition: color .2s;
+    }
+
+    .status.active {
+      color: var(--cyan);
+    }
+
+    .status.hit {
+      color: #8dffad;
+    }
+
+    .action {
+      width: 100%;
+      margin-top: 20px;
+      border: 0;
+      border-radius: 18px;
+      min-height: 62px;
+      color: #071412;
+      background: linear-gradient(135deg, #70f7e9, #37d7c9);
+      box-shadow: 0 8px 30px rgba(54,223,207,.16);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 850;
+      letter-spacing: 2.5px;
+      cursor: pointer;
+      transition: transform .12s, filter .2s;
+    }
+
+    .action:active {
+      transform: scale(.975);
+      filter: brightness(.92);
+    }
+
+    .action.stop {
+      color: white;
+      background: #243648;
+      border: 1px solid rgba(84,240,224,.35);
+      box-shadow: none;
+    }
+
+    .action:focus-visible {
+      outline: 2px solid white;
+      outline-offset: 4px;
+    }
+
+    .hint {
+      font-size: 11px;
+      color: #687990;
+      margin-top: 13px;
+      text-align: center;
+    }
+
+    .result {
+      display: none;
+      width: 100%;
+      margin-top: 26px;
+      padding: 19px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(16,25,39,.78);
+      animation: appear .3s ease both;
+    }
+
+    .result.show {
+      display: block;
+    }
+
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(7px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .result-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1.8px;
+      color: var(--muted);
+    }
+
+    .verdict {
+      color: var(--cyan);
+      font-size: 11px;
+      font-weight: 750;
+      text-align: right;
+    }
+
+    .result-bottom {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 13px;
+    }
+
+    .difference {
+      font-size: 26px;
+      font-weight: 750;
+      letter-spacing: -.6px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .direction {
+      font-size: 11px;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      margin-top: auto;
+      padding-top: 27px;
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      background: rgba(16,25,39,.65);
+      border-radius: 16px;
+      padding: 17px 15px;
+      min-width: 0;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      margin-top: 8px;
+      font-size: 22px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat-unit {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    footer {
+      padding-top: 24px;
+      font-size: 10px;
+      color: #52637a;
+      text-align: center;
+      letter-spacing: .4px;
+    }
+
+    @media (max-height: 760px) {
+      .intro { margin-top: 22px; }
+      .timer-area { width: min(65vw, 250px); margin-top: 20px; }
+      .action { margin-top: 12px; }
+      .stats { padding-top: 18px; }
+      footer { padding-top: 15px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <header>
+      <div class="brand">
+        <div class="brand-icon">◷</div>
+        <span>10.00</span>
+      </div>
+      <div class="tag">TIDSUTMANINGEN</div>
+    </header>
+
+    <section class="intro">
+      <div class="eyebrow">Testa din precision</div>
+      <h1>Kan du pricka<br>exakt tio sekunder?</h1>
+      <p class="subtitle">
+        Starta klockan. Känn tiden.<br>
+        Stoppa när du tror att 10 sekunder gått.
+      </p>
+    </section>
+
+    <section class="timer-area" aria-label="Tidtagning">
+      <svg class="dial" viewBox="0 0 100 100" aria-hidden="true">
+        <circle class="track" cx="50" cy="50" r="45"/>
+        <circle class="ticks" cx="50" cy="50" r="40"
+          stroke-dasharray="1 5.28"/>
+        <circle class="progress" id="progress"
+          cx="50" cy="50" r="45"/>
+      </svg>
+
+      <div class="readout">
+        <div class="time" id="time">00.00</div>
+        <div class="unit">SEKUNDER</div>
+      </div>
+    </section>
+
+    <div class="status" id="status" aria-live="polite">
+      Redo när du är
+    </div>
+
+    <button class="action" id="action" type="button">
+      STARTA
+    </button>
+
+    <div class="hint" id="hint">
+      Tryck igen när du tror att 10.00 har gått
+    </div>
+
+    <section class="result" id="result" aria-live="polite">
+      <div class="result-top">
+        <span class="result-label">DITT RESULTAT</span>
+        <span class="verdict" id="verdict"></span>
+      </div>
+      <div class="result-bottom">
+        <div class="difference" id="difference">±0.00 s</div>
+        <div class="direction" id="direction"></div>
+      </div>
+    </section>
+
+    <section class="stats">
+      <div class="stat">
+        <div class="stat-label">Bästa försök</div>
+        <div class="stat-value" id="best">—</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Antal försök</div>
+        <div class="stat-value" id="attempts">0</div>
+      </div>
+    </section>
+
+    <footer>
+      ALLT HANDLAR OM TAJMING
+    </footer>
+  </main>
+
+  <script>
+    (() => {
+      const TARGET = 10;
+      const CIRCUMFERENCE = 2 * Math.PI * 45;
+
+      const timeEl = document.getElementById("time");
+      const action = document.getElementById("action");
+      const status = document.getElementById("status");
+      const hint = document.getElementById("hint");
+      const progress = document.getElementById("progress");
+      const result = document.getElementById("result");
+      const verdict = document.getElementById("verdict");
+      const difference = document.getElementById("difference");
+      const direction = document.getElementById("direction");
+      const bestEl = document.getElementById("best");
+      const attemptsEl = document.getElementById("attempts");
+
+      let running = false;
+      let startTime = 0;
+      let animationFrame = 0;
+      let attempts = 0;
+      let bestDifference = null;
+      let bestTime = null;
+
+      try {
+        const saved = JSON.parse(
+          localStorage.getItem("ten00-stats") || "{}"
+        );
+
+        if (Number.isInteger(saved.attempts) && saved.attempts >= 0) {
+          attempts = saved.attempts;
+        }
+
+        if (
+          Number.isFinite(saved.bestDifference) &&
+          saved.bestDifference >= 0 &&
+          Number.isFinite(saved.bestTime)
+        ) {
+          bestDifference = saved.bestDifference;
+          bestTime = saved.bestTime;
+        }
+      } catch (_) {}
+
+      function formatTime(seconds) {
+        return seconds.toFixed(2);
+      }
+
+      function renderStats() {
+        attemptsEl.textContent = attempts;
+        bestEl.textContent = bestTime === null
+          ? "—"
+          : formatTime(bestTime) +
+            ' <span class="stat-unit">s</span>';
+
+        bestEl.innerHTML = bestTime === null
+          ? "—"
+          : formatTime(bestTime) +
+            ' <span class="stat-unit">s</span>';
+      }
+
+      function saveStats() {
+        try {
+          localStorage.setItem("ten00-stats", JSON.stringify({
+            attempts,
+            bestDifference,
+            bestTime
+          }));
+        } catch (_) {}
+      }
+
+      function setProgress(seconds) {
+        const fraction = Math.min(seconds / TARGET, 1);
+        progress.style.strokeDashoffset =
+          CIRCUMFERENCE * (1 - fraction);
+      }
+
+      function draw() {
+        if (!running) return;
+
+        const elapsed = (performance.now() - startTime) / 1000;
+        timeEl.textContent = formatTime(elapsed);
+        setProgress(elapsed);
+
+        animationFrame = requestAnimationFrame(draw);
+      }
+
+      function start() {
+        running = true;
+        startTime = performance.now();
+
+        action.textContent = "STOPPA";
+        action.classList.add("stop");
+
+        status.textContent = "Klockan går …";
+        status.className = "status active";
+
+        hint.textContent = "Lita på din känsla för tid";
+        result.classList.remove("show");
+
+        timeEl.textContent = "00.00";
+        setProgress(0);
+
+        animationFrame = requestAnimationFrame(draw);
+      }
+
+      function stop() {
+        // Mät stoppögonblicket direkt, inte nästa animation frame.
+        const elapsed = (performance.now() - startTime) / 1000;
+        running = false;
+        cancelAnimationFrame(animationFrame);
+
+        timeEl.textContent = formatTime(elapsed);
+        setProgress(elapsed);
+
+        const delta = elapsed - TARGET;
+        const absDelta = Math.abs(delta);
+
+        // Visad precision är hundradelar. "Fullträff" betyder
+        // att resultatet avrundas till 10.00 sekunder.
+        const roundedHit = formatTime(elapsed) === "10.00";
+
+        attempts++;
+
+        const newRecord =
+          bestDifference === null || absDelta < bestDifference;
+
+        if (newRecord) {
+          bestDifference = absDelta;
+          bestTime = elapsed;
+        }
+
+        saveStats();
+        renderStats();
+
+        action.textContent = "FÖRSÖK IGEN";
+        action.classList.remove("stop");
+
+        if (roundedHit) {
+          status.textContent = "FULLTRÄFF";
+          status.className = "status hit";
+          verdict.textContent = "PERFEKT · 10.00";
+          progress.style.stroke = "#8dffad";
+        } else {
+          status.textContent = "Tiden är stoppad";
+          status.className = "status";
+          verdict.textContent = newRecord
+            ? "NYTT PERSONBÄSTA"
+            : "BRA FÖRSÖK";
+          progress.style.stroke = "#54f0e0";
+        }
+
+        difference.textContent =
+          (delta > 0 ? "+" : delta < 0 ? "−" : "±") +
+          absDelta.toFixed(2) + " s";
+
+        direction.textContent = roundedHit
+          ? "Du prickade 10.00!"
+          : delta < 0
+            ? "Du stoppade för tidigt"
+            : "Du stoppade för sent";
+
+        hint.textContent = "Redo för en ny utmaning?";
+        result.classList.add("show");
+      }
+
+      action.addEventListener("click", () => {
+        if (running) {
+          stop();
+        } else {
+          // Återställ färgen om föregående försök var en fullträff.
+          progress.style.stroke = "#54f0e0";
+          start();
+        }
+      });
+
+      renderStats();
+
+      if ("serviceWorker" in navigator &&
+          (location.protocol === "https:" ||
+           location.hostname === "localhost" ||
+           location.hostname === "127.0.0.1")) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./sw.js")
+            .catch(() => {});
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
